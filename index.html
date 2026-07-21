@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>BLOOMBEE | Tutor Management</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+
+<body>
+
+
+    <div class="app">
+
+
+        <!-- Header -->
+
+        <header class="header">
+
+            <div class="logo-box">
+
+                <img src="assets/logo.jpeg" alt="BLOOMBEE Logo">
+
+                <h1>BLOOM BEE</h1>
+
+            </div>
+
+            <p>Tutor Management System</p>
+
+            <small>
+            Tutor: Zahirath Farhana
+        </small>
+
+        </header>
+
+
+
+
+        <!-- Main Content -->
+
+        <main>
+
+
+            <!-- Dashboard -->
+
+            <section id="home" class="page active">
+
+                <h2 id="greeting">
+                    👋 Welcome
+                </h2>
+
+
+                <div class="dashboard">
+
+
+                    <div class="box">
+                        <h3>👨‍🎓</h3>
+                        <h2 id="totalStudents">0</h2>
+                        <p>Students</p>
+                    </div>
+
+
+
+                    <div class="box">
+                        <h3>✅</h3>
+                        <h2 id="presentCount">0</h2>
+                        <p>Present Today</p>
+                    </div>
+
+
+
+
+                    <div class="box">
+                        <h3>❌</h3>
+                        <h2 id="absentCount">0</h2>
+                        <p>Absent Today</p>
+                    </div>
+
+
+
+                    <div class="box">
+                        <h3>💰</h3>
+                        <h2 id="pendingFees">₹0</h2>
+                        <p>Pending Fees</p>
+                    </div>
+
+
+                </div>
+
+
+
+                <button class="primary-btn" onclick="openPage('students')">
+
+                ➕ Add Student
+
+            </button>
+
+
+            </section>
+
+
+
+
+
+
+            <!-- Students -->
+
+            <section id="students" class="page">
+
+
+                <h2>👨‍🎓 Students</h2>
+
+
+                <div class="student-form">
+
+
+                    <input id="studentName" placeholder="Student Name">
+
+
+                    <label for="studentClass">
+                    Class
+                </label>
+
+
+                    <select id="studentClass">
+
+                    <option>LKG</option>
+                    <option>UKG</option>
+                    <option>Class 1</option>
+                    <option>Class 2</option>
+                    <option>Class 3</option>
+                    <option>Class 4</option>
+                    <option>Class 5</option>
+                    <option>Class 6</option>
+                    <option>Class 7</option>
+                    <option>Class 8</option>
+
+                </select>
+
+
+
+                    <input id="parentName" placeholder="Parent Name">
+
+
+                    <input id="phone" placeholder="Parent Phone">
+
+
+                    <button onclick="addStudent()">
+
+                    ➕ Add Student
+
+                </button>
+
+
+                </div>
+
+
+
+
+                <input id="search" placeholder="🔍 Search student" onkeyup="displayStudents()">
+
+
+
+                <div id="studentList">
+
+                </div>
+
+
+
+            </section>
+
+
+
+
+
+
+
+            <!-- Attendance -->
+
+            <section id="attendance" class="page">
+
+
+                <h2>📅 Attendance</h2>
+
+
+
+                <div class="attendance-box">
+
+                    <label for="attendanceDate">Select Date</label>
+                    <input type="date" id="attendanceDate" title="Select attendance date">
+
+                    <button onclick="markAllPresent()">
+                        ✅ Mark All Present
+                    </button>
+
+                </div>
+
+
+
+                <div id="attendanceList">
+
+                </div>
+
+
+            </section>
+
+
+
+
+
+
+
+            <!-- Fees -->
+
+            <section id="fees" class="page">
+
+
+                <h2>
+                    💰 Fees
+                </h2>
+
+                <select id="feeFilter" title="Filter fees by class" onchange="displayFees()">
+
+<option value="All">All Classes</option>
+
+<option>LKG</option>
+
+<option>UKG</option>
+
+<option>Class 1</option>
+
+<option>Class 2</option>
+
+<option>Class 3</option>
+
+<option>Class 4</option>
+
+<option>Class 5</option>
+
+<option>Class 6</option>
+
+<option>Class 7</option>
+
+<option>Class 8</option>
+
+</select>
+
+
+                <div id="feeList">
+
+                </div>
+
+
+            </section>
+
+            <!-- Reports -->
+
+            <section id="reports" class="page">
+
+
+                <h2>
+                    📊 Reports
+                </h2>
+
+
+
+                <button class="primary-btn" onclick="generateStudentReport()">
+
+
+                📄 Print Student Report
+
+
+            </button>
+
+
+
+            </section>
+
+            <!-- Settings -->
+
+            <section id="settings" class="page">
+
+
+                <h2>
+                    ⚙ Settings
+                </h2>
+
+
+                <div class="student-form">
+
+                    <label for="academy-name">Academy Name</label>
+                    <input id="academy-name" type="text" value="BLOOMBEE" readonly>
+
+                    <label for="tutor-name">Tutor Name</label>
+                    <input id="tutor-name" type="text" value="Zahirath Farhana" readonly>
+
+                    <label for="phone-number">Phone</label>
+                    <input id="phone-number" type="text" value="7019891083" readonly>
+
+                    <label for="whatsapp-number">WhatsApp</label>
+                    <input id="whatsapp-number" type="text" value="7019891083" readonly>
+
+                    <label for="classes">Classes</label>
+                    <input id="classes" type="text" value="LKG to Class 8" readonly>
+
+                </div>
+
+
+            </section>
+
+
+
+        </main>
+
+
+
+
+
+
+
+        <!-- Bottom Navigation -->
+
+
+        <nav class="bottom-nav">
+
+
+            <button onclick="openPage('home')">
+
+            🏠
+            <span>
+                Home
+            </span>
+
+        </button>
+
+
+
+            <button onclick="openPage('students')">
+
+            👨‍🎓
+            <span>
+                Students
+            </span>
+
+        </button>
+
+
+
+
+            <button onclick="openPage('attendance')">
+
+            📅
+            <span>
+                Attendance
+            </span>
+
+        </button>
+
+
+
+
+            <button onclick="openPage('fees')">
+
+            💰
+            <span>
+                Fees
+            </span>
+
+        </button>
+
+
+
+
+            <button onclick="openPage('reports')">
+
+            📊
+            <span>
+                Reports
+            </span>
+
+        </button>
+
+
+
+
+            <button onclick="openPage('settings')">
+
+            ⚙
+            <span>
+                Settings
+            </span>
+
+        </button>
+
+
+        </nav>
+
+
+
+    </div>
+
+
+
+
+
+    <script src="js/app.js"></script>
+    <script src="js/students.js"></script>
+    <script src="js/attendance.js"></script>
+    <script src="js/fees.js"></script>
+    <script src="js/reports.js"></script>
+
+
+</body>
+
+</html>

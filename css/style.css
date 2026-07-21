@@ -1,0 +1,247 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #fff8dc;
+}
+
+.app {
+    max-width: 500px;
+    margin: auto;
+    min-height: 100vh;
+    background: white;
+}
+
+.header {
+    background: #f4c430;
+    padding: 25px;
+    border-radius: 0 0 30px 30px;
+}
+
+.header h1 {
+    font-size: 30px;
+}
+
+.header p {
+    margin-top: 8px;
+}
+
+main {
+    padding: 20px;
+    padding-bottom: 90px;
+}
+
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
+}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.box {
+    background: #fff8dc;
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+}
+
+.box h3 {
+    font-size: 30px;
+}
+
+.box h2 {
+    margin: 10px 0;
+}
+
+.primary-btn {
+    width: 100%;
+    margin-top: 25px;
+    padding: 16px;
+    border: none;
+    border-radius: 20px;
+    background: #f4c430;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.empty {
+    background: #f8f8f8;
+    padding: 25px;
+    border-radius: 20px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 500px;
+    background: white;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 8px 5px;
+    border-top: 1px solid #ddd;
+    z-index: 1000;
+}
+
+.bottom-nav button {
+    border: none;
+    background: none;
+    font-size: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    color: #333;
+}
+
+.bottom-nav span {
+    font-size: 10px;
+}
+
+.student-form input,
+.student-form select {
+    width: 100%;
+    padding: 14px;
+    margin: 8px 0;
+    border-radius: 15px;
+    border: 1px solid #ddd;
+}
+
+.student-form button {
+    width: 100%;
+    padding: 15px;
+    background: #f4c430;
+    border: none;
+    border-radius: 15px;
+    font-weight: bold;
+}
+
+.student-card {
+    background: #fff8dc;
+    padding: 18px;
+    border-radius: 20px;
+    margin-top: 15px;
+}
+
+.student-card button {
+    padding: 8px 12px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 10px;
+}
+
+.whatsapp {
+    background: #25D366;
+    color: white;
+}
+
+.delete {
+    background: #f44336;
+    color: white;
+}
+
+.attendance-box {
+    background: #fff8dc;
+    padding: 20px;
+    border-radius: 20px;
+    margin-top: 15px;
+}
+
+.attendance-box input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+}
+
+.attendance-box button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 15px;
+    background: #4CAF50;
+    color: white;
+    font-weight: bold;
+}
+
+.attendance-card {
+    background: white;
+    padding: 15px;
+    border-radius: 15px;
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.attendance-card button {
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    margin-left: 5px;
+}
+
+.present-btn {
+    background: #4CAF50;
+    color: white;
+}
+
+.absent-btn {
+    background: #f44336;
+    color: white;
+}
+
+.edit {
+    background: #2196f3;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    margin-right: 5px;
+}
+
+.paid-status {
+    color: #2e7d32;
+    font-weight: bold;
+}
+
+.unpaid-status {
+    color: #d32f2f;
+    font-weight: bold;
+}
+
+.logo-box {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo-box img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: white;
+    padding: 5px;
+}
+
+.logo-box h1 {
+    font-size: 30px;
+}
