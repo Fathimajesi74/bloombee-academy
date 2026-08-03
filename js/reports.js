@@ -1,152 +1,233 @@
 function generateStudentReport() {
 
-    let report = window.open("", "_blank");
 
-    let today = new Date().toLocaleDateString();
+    let report =
+        window.open(
+            "",
+            "_blank"
+        );
 
-    let totalStudents = students.length;
 
-    let paidStudents = 0;
-    let unpaidStudents = 0;
-
-    let totalCollected = 0;
-    let totalPending = 0;
 
     report.document.write(`
-<!DOCTYPE html>
+
+
 <html>
 
 <head>
 
-<title>BLOOMBEE Student Report</title>
+
+<title>
+BLOOMBEE Student Report
+</title>
+
 
 <style>
 
+
 body{
-    font-family:Arial,sans-serif;
-    padding:25px;
-    color:#333;
+
+font-family:Arial;
+
+padding:20px;
+
 }
 
-h1{
-    text-align:center;
-    color:#f4b400;
-    margin-bottom:5px;
-}
 
-h2{
-    text-align:center;
-    margin-top:0;
-}
-
-.info{
-    text-align:center;
-    margin-bottom:25px;
-}
 
 .card{
-    border:1px solid #ddd;
-    border-radius:10px;
-    padding:15px;
-    margin-bottom:15px;
+
+border:1px solid #ccc;
+
+padding:15px;
+
+margin:15px;
+
+border-radius:10px;
+
 }
 
-.card p{
-    margin:6px 0;
+
+h1{
+
+text-align:center;
+
 }
 
-.summary{
-    margin-top:30px;
-    border-top:2px solid #000;
-    padding-top:15px;
-    font-weight:bold;
-}
 
 </style>
 
+
 </head>
+
 
 <body>
 
-<div style="text-align:center;">
-    <img src="assets/logo.jpeg" width="90">
-    <h1>BLOOM BEE ACADEMY</h1>
-</div>
 
-<h2>Student Report</h2>
 
-<div class="info">
-Tutor : <b>Zahirath Farhana</b><br>
-Date : ${today}
-</div>
+<h1>
+🐝 BLOOMBEE
+</h1>
+
+
+<h2>
+Student Report
+</h2>
+
+
 
 `);
+
+
+
+
 
     students.forEach(student => {
 
-        let present = student.presentCount || 0;
-        let absent = student.absentCount || 0;
 
-        if (student.feeStatus === "Paid") {
-            paidStudents++;
-            totalCollected += Number(student.fee);
-        } else {
-            unpaidStudents++;
-            totalPending += Number(student.fee);
-        }
+        let attendance =
+            getStudentAttendance(
+                student
+            );
+
+
+
+        let total =
+
+            attendance.present +
+
+            attendance.absent;
+
+
+
+        let percentage =
+
+            total > 0
+
+            ?
+
+            Math.round(
+
+                attendance.present /
+
+                total *
+
+                100
+
+            )
+
+        :
+
+        0;
+
+
+
 
         report.document.write(`
 
+
 <div class="card">
 
-<h3>👤 ${student.name}</h3>
 
-<p><b>Class:</b> ${student.class}</p>
+<h3>
+👤 ${student.name}
+</h3>
 
-<p><b>Parent:</b> ${student.parent}</p>
 
-<p><b>Phone:</b> ${student.phone || "No Number"}</p>
 
-<p><b>Monthly Fee:</b> ₹${student.fee}</p>
+<p>
+🎓 Class:
+${student.class}
+</p>
 
-<p><b>Fee Status:</b> ${student.feeStatus}</p>
 
-<p><b>Present Days:</b> ${present}</p>
 
-<p><b>Absent Days:</b> ${absent}</p>
+<p>
+👨‍👩‍👧 Parent:
+${student.parent}
+</p>
+
+
+
+<p>
+📱 Phone:
+${student.phone}
+</p>
+
+
+
+<p>
+📅 Joining Date:
+${student.joiningDate}
+</p>
+
+
+
+<p>
+💰 Monthly Fee:
+₹${student.fee}
+</p>
+
+
+
+<p>
+📄 Fee Status:
+${student.feeStatus}
+</p>
+
+
+
+<p>
+✅ Total Present:
+${attendance.present}
+</p>
+
+
+
+<p>
+❌ Total Absent:
+${attendance.absent}
+</p>
+
+
+
+<p>
+📊 Attendance:
+${percentage}%
+</p>
+
+
 
 </div>
+
 
 `);
 
+
+
     });
+
+
+
+
 
     report.document.write(`
 
-<div class="summary">
-
-<h2>Summary</h2>
-
-<p>Total Students : ${totalStudents}</p>
-
-<p>Paid Students : ${paidStudents}</p>
-
-<p>Unpaid Students : ${unpaidStudents}</p>
-
-<p>Total Fees Collected : ₹${totalCollected}</p>
-
-<p>Total Pending Fees : ₹${totalPending}</p>
-
-</div>
 
 </body>
 
 </html>
 
+
 `);
+
+
 
     report.document.close();
 
+
     report.print();
+
+
 
 }

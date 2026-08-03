@@ -1,88 +1,34 @@
-function updateFeeDashboard() {
+function saveStudents() {
 
-
-    let pendingAmount = 0;
-
-
-    students.forEach(student => {
-
-
-        if (student.feeStatus === "Not Paid") {
-
-            pendingAmount += Number(student.fee);
-
-        }
-
-
-    });
-
-
-
-    let feeBox = document.getElementById("pendingFees");
-
-
-
-    if (feeBox) {
-
-        feeBox.innerText = "₹" + pendingAmount;
-
-    }
-
+    localStorage.setItem(
+        "students",
+        JSON.stringify(students)
+    );
 
 }
-
-
-
-
-
-function toggleFeeStatus(index) {
-
-
-    if (students[index].feeStatus === "Paid") {
-
-
-        students[index].feeStatus = "Not Paid";
-
-
-    } else {
-
-
-        students[index].feeStatus = "Paid";
-
-
-    }
-
-
-    saveStudents();
-
-
-    displayFees();
-
-
-    updateFeeDashboard();
-
-
-}
-
-
 
 
 
 function displayFees() {
 
+    let feeList =
+        document.getElementById(
+            "feeList"
+        );
 
-    let box = document.getElementById("feeList");
+
+    if (!feeList) return;
 
 
-    if (!box) return;
-
-
-    box.innerHTML = "";
-
+    feeList.innerHTML = "";
 
 
     let filter =
-        document.getElementById("feeFilter").value;
+        document.getElementById(
+            "feeFilter"
+        ).value;
+
+
 
     students
 
@@ -98,51 +44,53 @@ function displayFees() {
 
     })
 
+
     .forEach((student, index) => {
 
 
-
-        box.innerHTML += `
+        feeList.innerHTML += `
 
 
 <div class="student-card">
 
 
 <h3>
-${student.name}
+👤 ${student.name}
 </h3>
 
 
 <p>
-Class: ${student.class}
+🎓 Class:
+${student.class}
 </p>
 
 
 <p>
-Fee: ₹${student.fee}
+💰 Monthly Fee:
+₹${student.fee}
 </p>
 
 
-
-<p class="${
-student.feeStatus === 'Paid'
-? 'paid-status'
-: 'unpaid-status'
-}">
-
-Status: ${student.feeStatus}
-
+<p>
+📄 Payment Status:
+<strong>
+${student.feeStatus}
+</strong>
 </p>
 
 
+<button
+onclick="markFeePaid(${index})">
 
-<button onclick="toggleFeeStatus(${index})">
+${student.feeStatus==="Paid"
 
-${
-student.feeStatus === "Paid"
-? "↩ Mark Unpaid"
-: "✅ Mark Paid"
-}
+?
+
+"↩ Mark Unpaid"
+
+:
+
+"✅ Mark Paid"}
 
 </button>
 
@@ -158,12 +106,88 @@ student.feeStatus === "Paid"
     });
 
 
+
+    updatePendingFees();
+
+
 }
 
 
 
 
+function markFeePaid(index) {
+
+
+    if (
+        students[index].feeStatus === "Paid"
+    ) {
+
+        students[index].feeStatus =
+            "Not Paid";
+
+    } else {
+
+        students[index].feeStatus =
+            "Paid";
+
+    }
+
+
+
+    saveStudents();
+
+
+    displayFees();
+
+
+    updateDashboard();
+
+
+}
+
+
+
+
+function updatePendingFees() {
+
+
+    let total = 0;
+
+
+    students.forEach(student => {
+
+
+        if (
+            student.feeStatus === "Not Paid"
+        ) {
+
+            total += Number(
+                student.fee
+            );
+
+        }
+
+
+    });
+
+
+
+    let element =
+        document.getElementById(
+            "pendingFees"
+        );
+
+
+    if (element) {
+
+        element.innerText =
+            "₹" + total;
+
+    }
+
+
+}
+
+
 
 displayFees();
-
-updateFeeDashboard();

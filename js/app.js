@@ -1,39 +1,104 @@
 function openPage(page) {
 
-    let pages = document.querySelectorAll(".page");
+
+    let pages =
+        document.querySelectorAll(
+            ".page"
+        );
 
 
-    pages.forEach(function(item) {
 
-        item.classList.remove("active");
+    pages.forEach(p => {
+
+
+        p.classList.remove(
+            "active"
+        );
+
 
     });
 
 
+
     document
         .getElementById(page)
-        .classList.add("active");
+        .classList.add(
+            "active"
+        );
 
 
 }
 
 
 
+function updateGreeting() {
+
+
+    let hour =
+        new Date()
+        .getHours();
+
+
+
+    let message = "";
+
+
+
+    if (hour < 12) {
+
+
+        message =
+            "Good Morning 👋";
+
+
+    } else if (hour < 17) {
+
+
+        message =
+            "Good Afternoon 👋";
+
+
+    } else {
+
+
+        message =
+            "Good Evening 👋";
+
+
+    }
+
+
+
+
+
+    let greeting =
+        document.getElementById(
+            "greeting"
+        );
+
+
+
+    if (greeting) {
+
+        greeting.innerText =
+            message;
+
+    }
+
+
+}
+
+
+
+
 function updateDashboard() {
 
 
-    let today = new Date()
-        .toISOString()
-        .split("T")[0];
+    if (
+        typeof students === "undefined"
+    )
+        return;
 
-
-    let attendance =
-        JSON.parse(localStorage.getItem("attendance")) || {};
-
-
-
-    let todayAttendance =
-        attendance[today] || {};
 
 
 
@@ -43,40 +108,105 @@ function updateDashboard() {
 
 
 
-    Object.values(todayAttendance)
-        .forEach(status => {
+    let today =
+        new Date()
+        .toISOString()
+        .split("T")[0];
 
 
-            if (status === "Present") {
 
-                present++;
+    let attendance =
+        JSON.parse(
 
-            }
+            localStorage.getItem(
+                "attendance"
 
+            )
 
-            if (status === "Absent") {
-
-                absent++;
-
-            }
+        ) || {};
 
 
-        });
+
+
+
+    if (
+        attendance[today]
+    ) {
+
+
+
+        Object.values(
+                attendance[today]
+
+            )
+            .forEach(status => {
+
+
+                if (
+                    status === "Present"
+                ) {
+
+                    present++;
+
+                }
+
+
+
+                if (
+                    status === "Absent"
+                ) {
+
+                    absent++;
+
+                }
+
+
+
+            });
+
+
+    }
+
+
+
+
+
+    let total =
+        document.getElementById(
+            "totalStudents"
+        );
 
 
 
     let presentBox =
-        document.getElementById("presentCount");
+        document.getElementById(
+            "presentCount"
+        );
+
 
 
     let absentBox =
-        document.getElementById("absentCount");
+        document.getElementById(
+            "absentCount"
+        );
+
+
+
+
+
+    if (total) {
+
+        total.innerText =
+            students.length;
+
+    }
 
 
 
     if (presentBox) {
 
-        presentBox.innerText = present;
+        presentBox.innerText =
+            present;
 
     }
 
@@ -84,7 +214,19 @@ function updateDashboard() {
 
     if (absentBox) {
 
-        absentBox.innerText = absent;
+        absentBox.innerText =
+            absent;
+
+    }
+
+
+
+
+    if (
+        typeof updatePendingFees === "function"
+    ) {
+
+        updatePendingFees();
 
     }
 
@@ -92,38 +234,23 @@ function updateDashboard() {
 
 }
 
-function updateGreeting() {
 
-    let hour = new Date().getHours();
 
-    let greeting = "";
 
-    if (hour >= 5 && hour < 12) {
 
-        greeting = "🌅 Good Morning";
+window.onload = function() {
 
-    } else if (hour >= 12 && hour < 17) {
 
-        greeting = "☀️ Good Afternoon";
+    updateGreeting();
 
-    } else if (hour >= 17 && hour < 21) {
 
-        greeting = "🌇 Good Evening";
+    setInterval(
+        updateGreeting,
+        60000
+    );
 
-    } else {
 
-        greeting = "🌙 Good Night";
+    updateDashboard();
 
-    }
 
-    let greet = document.getElementById("greeting");
-
-    if (greet) {
-
-        greet.innerText = greeting;
-
-    }
-
-}
-
-updateGreeting();
+};

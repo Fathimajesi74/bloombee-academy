@@ -1,136 +1,346 @@
 let attendanceData =
-    JSON.parse(localStorage.getItem("attendance")) || {};
+    JSON.parse(
+        localStorage.getItem("attendance")
+    ) || {};
 
 
 
-function todayDate() {
+function saveAttendance() {
 
-    return document.getElementById("attendanceDate").value;
+    localStorage.setItem(
+
+        "attendance",
+
+        JSON.stringify(
+            attendanceData
+        )
+
+    );
 
 }
 
 
+
+function getSelectedDate() {
+
+    let input =
+        document.getElementById(
+            "attendanceDate"
+        );
+
+
+    if (!input) {
+
+        return "";
+
+    }
+
+
+    return input.value;
+
+}
 
 
 
 function loadAttendance() {
 
-
     let list =
-        document.getElementById("attendanceList");
+        document.getElementById(
+            "attendanceList"
+        );
 
 
     if (!list) return;
 
 
+    let selectedDate =
+        getSelectedDate();
+
+
+    if (selectedDate === "") {
+
+        list.innerHTML = `
+
+<p>
+Please select a date.
+</p>
+
+`;
+
+        return;
+
+    }
+
+
     list.innerHTML = "";
 
 
-    let date =
-        todayDate();
+    if (
+
+        attendanceData[selectedDate]
+
+        &&
+
+        attendanceData[selectedDate]
+        .holiday === true
+
+    ) {
+
+        list.innerHTML = `
+
+<div class="student-card">
+
+<h3>
+🏖 Holiday
+</h3>
+
+<p>
+Attendance is not required
+for this date.
+</p>
+
+</div>
+
+`;
+
+        return;
+
+    }
 
 
 
-    students.forEach((student, index) => {
+    students.forEach(
+        student => {
 
 
-        let status = "";
+            let status =
+
+                attendanceData[selectedDate]
+
+            ?
+
+            attendanceData[selectedDate]
+                [student.id]
+
+            :
+
+            "";
 
 
+            let summary =
 
-        if (
-            attendanceData[date] &&
-            attendanceData[date][index]
-        ) {
-
-            status =
-                attendanceData[date][index];
-
-        }
+                getIndividualAttendance(
+                    student,
+                    selectedDate
+                );
 
 
-
-        list.innerHTML += `
-
+            list.innerHTML += `
 
 <div class="attendance-card">
 
 
-    <div>
+<div class="attendance-student">
 
 
-        <strong>
-            ${student.name}
-        </strong>
+<h3>
+
+👤 ${student.name}
+
+</h3>
 
 
-        <br>
+<p>
+
+🎓 Class:
+
+${student.class}
+
+</p>
 
 
-        <small>
-            ${student.class}
-        </small>
+<p>
+
+📅 Selected Date:
+
+${selectedDate}
+
+</p>
 
 
-        <br>
+<p>
 
+Status:
 
-        <small>
-            Status:
-            ${status || "Not Marked"}
-        </small>
+<strong>
 
+${status || "Not Marked"}
 
-    </div>
+</strong>
 
-
-
-    <div>
-
-
-        <button
-        class="present-btn"
-        onclick="markAttendance(${index},'Present')">
-
-        ✅
-
-        </button>
+</p>
 
 
 
-        <button
-        class="absent-btn"
-        onclick="markAttendance(${index},'Absent')">
-
-        ❌
-
-        </button>
+<div class="attendance-buttons">
 
 
-    </div>
+<button
+
+class="present-btn"
+
+onclick="markAttendance(
+${student.id},
+'Present'
+)">
+
+✅ Present
+
+</button>
+
+
+
+<button
+
+class="absent-btn"
+
+onclick="markAttendance(
+${student.id},
+'Absent'
+)">
+
+❌ Absent
+
+</button>
 
 
 </div>
 
 
+
+<div class="student-attendance-summary">
+
+
+<h3>
+
+📊 ${student.name}'s
+Attendance Summary
+
+</h3>
+
+
+<p>
+
+Selected Month:
+
+<strong>
+
+${summary.monthName}
+
+</strong>
+
+</p>
+
+
+<p>
+
+✅ Monthly Present:
+
+<strong>
+
+${summary.monthlyPresent}
+
+</strong>
+
+</p>
+
+
+<p>
+
+❌ Monthly Absent:
+
+<strong>
+
+${summary.monthlyAbsent}
+
+</strong>
+
+</p>
+
+
+<p>
+
+🏖 Holidays:
+
+<strong>
+
+${summary.holidays}
+
+</strong>
+
+</p>
+
+
+<p>
+
+📈 Year Present:
+
+<strong>
+
+${summary.yearPresent}
+
+</strong>
+
+</p>
+
+
+<p>
+
+📉 Year Absent:
+
+<strong>
+
+${summary.yearAbsent}
+
+</strong>
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
 `;
 
-    });
-
+        });
 
 }
 
 
 
-
-
-
-function markAttendance(index, status) {
-
+function markAttendance(
+    studentId,
+    status
+) {
 
     let date =
-        todayDate();
+        getSelectedDate();
 
+
+    if (date === "") {
+
+        alert(
+            "Please select a date."
+        );
+
+        return;
+
+    }
 
 
     if (!attendanceData[date]) {
@@ -140,123 +350,68 @@ function markAttendance(index, status) {
     }
 
 
+    if (
 
-    let oldStatus =
-        attendanceData[date][index];
+        attendanceData[date]
+        .holiday === true
 
+    ) {
 
+        alert(
 
-    if (!students[index].attendance) {
+            "This date is marked as a holiday."
 
-        students[index].attendance = {
+        );
 
-            present: 0,
-
-            absent: 0
-
-        };
-
-    }
-
-
-
-
-
-    // Remove previous attendance count
-
-
-    if (oldStatus === "Present") {
-
-
-        students[index].attendance.present =
-            Math.max(
-                0,
-                students[index].attendance.present - 1
-            );
-
+        return;
 
     }
 
 
+    attendanceData[date]
+        [studentId] =
 
-    if (oldStatus === "Absent") {
-
-
-        students[index].attendance.absent =
-            Math.max(
-                0,
-                students[index].attendance.absent - 1
-            );
+        status;
 
 
-    }
-
-
-
-
-
-
-    // Add new attendance count
-
-
-    if (status === "Present") {
-
-
-        students[index].attendance.present++;
-
-    }
-
-
-
-    if (status === "Absent") {
-
-
-        students[index].attendance.absent++;
-
-    }
-
-
-
-
-
-
-    attendanceData[date][index] = status;
-
-
-
-    localStorage.setItem(
-        "attendance",
-        JSON.stringify(attendanceData)
-    );
-
-
-
-    saveStudents();
-
+    saveAttendance();
 
 
     loadAttendance();
 
 
+    if (
 
-    updateDashboard();
+        typeof updateDashboard ===
+        "function"
 
+    ) {
+
+        updateDashboard();
+
+    }
 
 }
-
-
-
-
-
 
 
 
 function markAllPresent() {
 
-
     let date =
-        todayDate();
+        getSelectedDate();
 
+
+    if (date === "") {
+
+        alert(
+
+            "Please select a date."
+
+        );
+
+        return;
+
+    }
 
 
     if (!attendanceData[date]) {
@@ -266,136 +421,430 @@ function markAllPresent() {
     }
 
 
+    if (
+
+        attendanceData[date]
+        .holiday === true
+
+    ) {
+
+        alert(
+
+            "This date is a holiday."
+
+        );
+
+        return;
+
+    }
 
 
-    students.forEach((student, index) => {
+    students.forEach(
+        student => {
 
 
+            attendanceData[date]
+                [student.id] =
 
-        if (!student.attendance) {
-
-
-            student.attendance = {
-
-                present: 0,
-
-                absent: 0
-
-            };
+                "Present";
 
 
-        }
+        });
 
 
-
-
-
-        let oldStatus =
-            attendanceData[date][index];
-
-
-
-
-
-
-        if (oldStatus === "Absent") {
-
-
-            student.attendance.absent =
-                Math.max(
-                    0,
-                    student.attendance.absent - 1
-                );
-
-
-        }
-
-
-
-
-
-
-        if (oldStatus !== "Present") {
-
-
-            student.attendance.present++;
-
-
-        }
-
-
-
-
-
-        attendanceData[date][index] =
-            "Present";
-
-
-
-    });
-
-
-
-
-
-    localStorage.setItem(
-        "attendance",
-        JSON.stringify(attendanceData)
-    );
-
-
-
-    saveStudents();
-
+    saveAttendance();
 
 
     loadAttendance();
 
 
+    if (
 
-    updateDashboard();
+        typeof updateDashboard ===
+        "function"
 
+    ) {
+
+        updateDashboard();
+
+    }
+
+
+    alert(
+
+        "All students marked Present."
+
+    );
 
 }
 
 
 
+function toggleHoliday() {
+
+    let date =
+        getSelectedDate();
+
+
+    if (date === "") {
+
+        alert(
+
+            "Please select a date."
+
+        );
+
+        return;
+
+    }
+
+
+    if (
+
+        attendanceData[date]
+
+        &&
+
+        attendanceData[date]
+        .holiday === true
+
+    ) {
+
+
+        if (
+
+            confirm(
+
+                "Remove holiday?"
+
+            )
+
+        ) {
+
+
+            delete attendanceData[date];
+
+
+            saveAttendance();
+
+
+            loadAttendance();
+
+        }
+
+
+        return;
+
+    }
+
+
+    if (
+
+        confirm(
+
+            "Mark this date as a holiday?"
+
+        )
+
+    ) {
+
+
+        attendanceData[date] = {
+
+            holiday: true
+
+        };
+
+
+        saveAttendance();
+
+
+        loadAttendance();
+
+
+        if (
+
+            typeof updateDashboard ===
+            "function"
+
+        ) {
+
+            updateDashboard();
+
+        }
+
+    }
+
+}
 
 
 
+function getIndividualAttendance(
+    student,
+    selectedDate
+) {
+
+
+    let selected =
+
+        new Date(
+
+            selectedDate +
+
+            "T00:00:00"
+
+        );
+
+
+    let selectedMonth =
+
+        selected.getMonth();
+
+
+    let selectedYear =
+
+        selected.getFullYear();
+
+
+    let monthlyPresent = 0;
+
+    let monthlyAbsent = 0;
+
+    let holidays = 0;
+
+    let yearPresent = 0;
+
+    let yearAbsent = 0;
 
 
 
-document
-    .getElementById("attendanceDate")
-    .addEventListener(
-        "change",
-        loadAttendance
-    );
+    Object.keys(
+        attendanceData
+    ).forEach(
+        date => {
+
+
+            let current =
+
+                new Date(
+
+                    date +
+
+                    "T00:00:00"
+
+                );
+
+
+            let day =
+
+                attendanceData[date];
+
+
+            let sameMonth =
+
+                current.getMonth()
+
+            ===
+
+            selectedMonth
+
+                &&
+
+                current.getFullYear()
+
+            ===
+
+            selectedYear;
+
+
+            let sameYear =
+
+                current.getFullYear()
+
+            ===
+
+            selectedYear;
 
 
 
+            if (
+
+                day.holiday === true
+
+            ) {
+
+
+                if (sameMonth) {
+
+                    holidays++;
+
+                }
+
+
+                return;
+
+            }
 
 
 
+            let status =
 
-
-setTimeout(() => {
-
-
-    let dateInput =
-        document.getElementById("attendanceDate");
+                day[student.id];
 
 
 
-    if (dateInput) {
+            if (
+
+                status ===
+
+                "Present"
+
+            ) {
+
+
+                if (sameMonth) {
+
+                    monthlyPresent++;
+
+                }
+
+
+                if (sameYear) {
+
+                    yearPresent++;
+
+                }
+
+            }
 
 
 
-        dateInput.value =
-            new Date()
+            if (
+
+                status ===
+
+                "Absent"
+
+            ) {
+
+
+                if (sameMonth) {
+
+                    monthlyAbsent++;
+
+                }
+
+
+                if (sameYear) {
+
+                    yearAbsent++;
+
+                }
+
+            }
+
+
+        });
+
+
+
+    let monthName =
+
+        selected.toLocaleString(
+
+            "en-IN",
+
+            {
+
+                month: "long",
+
+                year: "numeric"
+
+            }
+
+        );
+
+
+
+    return {
+
+        monthName:
+
+            monthName,
+
+        monthlyPresent:
+
+            monthlyPresent,
+
+        monthlyAbsent:
+
+            monthlyAbsent,
+
+        holidays:
+
+            holidays,
+
+        yearPresent:
+
+            yearPresent,
+
+        yearAbsent:
+
+            yearAbsent
+
+    };
+
+}
+
+
+
+document.addEventListener(
+
+    "DOMContentLoaded",
+
+    function() {
+
+
+        let dateInput =
+
+            document.getElementById(
+
+                "attendanceDate"
+
+            );
+
+
+        if (!dateInput) return;
+
+
+
+        if (
+
+            dateInput.value === ""
+
+        ) {
+
+
+            dateInput.value =
+
+                new Date()
+
             .toISOString()
+
             .split("T")[0];
+
+
+        }
+
+
+
+        dateInput.addEventListener(
+
+            "change",
+
+            loadAttendance
+
+        );
 
 
 
@@ -404,12 +853,4 @@ setTimeout(() => {
 
     }
 
-
-
-}, 500);
-
-
-
-
-
-updateDashboard();
+);

@@ -1,183 +1,382 @@
-let students = JSON.parse(localStorage.getItem("students")) || [];
-const classFees = {
-    "LKG": 500,
-    "UKG": 500,
-    "Class 1": 600,
-    "Class 2": 600,
-    "Class 3": 700,
-    "Class 4": 700,
-    "Class 5": 700,
-    "Class 6": 900,
-    "Class 7": 900,
-    "Class 8": 900
-};
-students.forEach(student => {
+let students =
+    JSON.parse(
+        localStorage.getItem("students")
+    ) || [];
 
-    if (!student.attendance) {
 
-        student.attendance = {
-            present: 0,
-            absent: 0
-        };
+students.forEach(
+    (student, index) => {
+
+        if (!student.id) {
+
+            student.id =
+                Date.now() +
+                index;
+
+        }
+
+
+        if (!student.joiningDate) {
+
+            student.joiningDate =
+                "";
+
+        }
+
+
+        if (
+            student.fee === undefined
+        ) {
+
+            student.fee = 0;
+
+        }
+
+
+        if (!student.feeStatus) {
+
+            student.feeStatus =
+                "Not Paid";
+
+        }
+
+
+        if (!student.attendance) {
+
+            student.attendance = {
+
+                present: 0,
+
+                absent: 0
+
+            };
+
+        }
 
     }
-
-    if (!student.feeStatus) {
-
-        student.feeStatus = "Not Paid";
-
-    }
-
-    if (!student.fee) {
-
-        student.fee = classFees[student.class] || 0;
-
-    }
-
-});
-localStorage.setItem(
-    "students",
-    JSON.stringify(students)
 );
 
-// Save students
+
+saveStudents();
+
+
 function saveStudents() {
 
     localStorage.setItem(
+
         "students",
-        JSON.stringify(students)
+
+        JSON.stringify(
+            students
+        )
+
     );
 
 }
 
-// Add Student
+
 function addStudent() {
 
-
-    let name = document
-        .getElementById("studentName")
+    let name =
+        document
+        .getElementById(
+            "studentName"
+        )
         .value
         .trim();
 
 
-    let className = document
-        .getElementById("studentClass")
+    let className =
+        document
+        .getElementById(
+            "studentClass"
+        )
         .value;
 
 
-    let parent = document
-        .getElementById("parentName")
+    let parent =
+        document
+        .getElementById(
+            "parentName"
+        )
         .value
         .trim();
 
 
-    let phone = document
-        .getElementById("phone")
+    let phone =
+        document
+        .getElementById(
+            "phone"
+        )
         .value
         .trim();
 
-    let fee = classFees[className];
+
+    let joiningDate =
+        document
+        .getElementById(
+            "joiningDate"
+        )
+        .value;
+
+
+    let fee =
+        Number(
+
+            document
+            .getElementById(
+                "fee"
+            )
+            .value
+
+        );
 
 
     if (name === "") {
 
-        alert("Please enter student name");
+        alert(
+            "Enter student name."
+        );
 
         return;
 
     }
 
-    let student = {
 
-        id: Date.now(),
+    if (joiningDate === "") {
 
-        name: name,
+        alert(
+            "Select joining date."
+        );
 
-        class: className,
+        return;
 
-        parent: parent,
+    }
 
-        phone: phone,
+
+    if (
+        isNaN(fee) ||
+        fee < 0
+    ) {
+
+        alert(
+            "Enter valid monthly fee."
+        );
+
+        return;
+
+    }
+
+
+    students.push({
+
+        id:
+
+            Date.now() +
+
+            Math.floor(
+                Math.random() * 1000
+            ),
+
+        name:
+
+            name,
+
+        class:
+
+            className,
+
+        parent:
+
+            parent,
+
+        phone:
+
+            phone,
+
+        joiningDate:
+
+            joiningDate,
+
+        fee:
+
+            fee,
+
+        feeStatus:
+
+            "Not Paid",
 
         attendance: {
+
             present: 0,
+
             absent: 0
-        },
 
-        fee: Number(fee),
+        }
 
-        feeStatus: "Not Paid"
-
-    };
-
-
-
-    students.push(student);
-
+    });
 
 
     saveStudents();
 
 
+    document
+        .getElementById(
+            "studentName"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "parentName"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "phone"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "joiningDate"
+        )
+        .value = "";
+
+
+    document
+        .getElementById(
+            "fee"
+        )
+        .value = "";
+
+
     displayStudents();
 
 
-
-    // Clear inputs
-
-    document.getElementById("studentName").value = "";
-
-    document.getElementById("parentName").value = "";
-
-    document.getElementById("phone").value = "";
-
-
-
-    // Refresh attendance list if available
-
-    if (typeof loadAttendance === "function") {
+    if (
+        typeof loadAttendance ===
+        "function"
+    ) {
 
         loadAttendance();
 
     }
 
 
+    if (
+        typeof displayFees ===
+        "function"
+    ) {
+
+        displayFees();
+
+    }
+
+
+    alert(
+        "Student added successfully."
+    );
+
 }
 
 
+function getStudentAttendance(
+    student
+) {
+
+    let data =
+
+        JSON.parse(
+
+            localStorage.getItem(
+                "attendance"
+            )
+
+        ) || {};
 
 
-// Display Students
+    let present = 0;
+
+    let absent = 0;
+
+
+    Object.values(
+        data
+    ).forEach(day => {
+
+        if (
+            day.holiday
+        ) {
+
+            return;
+
+        }
+
+
+        if (
+            day[student.id] ===
+            "Present"
+        ) {
+
+            present++;
+
+        }
+
+
+        if (
+            day[student.id] ===
+            "Absent"
+        ) {
+
+            absent++;
+
+        }
+
+    });
+
+
+    return {
+
+        present:
+
+            present,
+
+        absent:
+
+            absent
+
+    };
+
+}
+
 
 function displayStudents() {
 
-
     let list =
-        document.getElementById("studentList");
-
+        document
+        .getElementById(
+            "studentList"
+        );
 
 
     if (!list) return;
 
 
+    let search =
+        document
+        .getElementById(
+            "search"
+        )
+        ?.value
+        ?.toLowerCase() || "";
+
 
     list.innerHTML = "";
-
-
-
-    let searchInput =
-        document.getElementById("search");
-
-
-
-    let search = "";
-
-    if (searchInput) {
-
-        search = searchInput.value.toLowerCase();
-
-    }
-
 
 
     students
@@ -190,64 +389,112 @@ function displayStudents() {
 
     )
 
-
-    .forEach((student, index) => {
-
-
-        list.innerHTML += `
+    .forEach(
+        (student, index) => {
 
 
-        <div class="student-card">
+            let totals =
+                getStudentAttendance(
+                    student
+                );
 
 
-            <h3>
-            👤 ${student.name}
-            </h3>
+            let total =
+
+                totals.present +
+
+                totals.absent;
 
 
-            <p>
-            🎓 Class: ${student.class}
-            </p>
+            let percentage =
+
+                total > 0
+
+                ?
+
+                Math.round(
+
+                    totals.present /
+
+                    total *
+
+                    100
+
+                )
+
+            :
+
+            0;
 
 
-            <p>
-            👨‍👩‍👧 Parent: ${student.parent || "Not Added"}
-            </p>
+            list.innerHTML += `
 
+<div class="student-card">
 
-            <p>
-            📱 ${student.phone || "No Number"}
-            </p>
+<h3>
+👤 ${student.name}
+</h3>
 
-            <p>
-💰 Fee: ₹${student.fee}
+<p>
+🎓 Class:
+${student.class}
 </p>
 
 <p>
-📄 Status: ${student.feeStatus}
+👨‍👩‍👧 Parent:
+${student.parent || "Not Added"}
 </p>
 
 <p>
-✅ Present: ${student.attendance?.present || 0}
+📱
+${student.phone || "No Number"}
 </p>
 
 <p>
-❌ Absent: ${student.attendance?.absent || 0}
+📅 Joining Date:
+${student.joiningDate || "Not Added"}
 </p>
-        
-            <button 
-            class="whatsapp"
-            onclick="openWhatsApp('${student.phone}')">
 
-            💬 WhatsApp
+<p>
+💰 Monthly Fee:
+₹${student.fee}
+</p>
 
-            </button>
+<p>
+📄 Status:
+${student.feeStatus}
+</p>
 
+<p>
+✅ Total Present:
+${totals.present}
+</p>
 
+<p>
+❌ Total Absent:
+${totals.absent}
+</p>
 
-            <button
+<p>
+📊 Attendance:
+${percentage}%
+</p>
+
+<button
+class="whatsapp"
+onclick="openWhatsApp(
+'${student.phone}'
+)">
+
+💬 WhatsApp
+
+</button>
+
+<button
 class="edit"
-onclick="editStudent(${index})">
+onclick="editStudent(
+${index}
+)">
 
 ✏ Edit
 
@@ -255,70 +502,193 @@ onclick="editStudent(${index})">
 
 <button
 class="delete"
-onclick="deleteStudent(${index})">
+onclick="deleteStudent(
+${index}
+)">
 
 🗑 Delete
 
 </button>
 
+</div>
 
-        </div>
+`;
 
-
-        `;
-
-
-    });
-
+        });
 
 
     updateStudentCount();
 
-
 }
+
 
 function editStudent(index) {
 
-    let student = students[index];
+    let student =
+        students[index];
 
-    let newName =
+
+    let name =
         prompt(
+
             "Student Name",
+
             student.name
+
         );
 
-    if (newName === null) return;
 
-    let newParent =
+    if (
+        name === null
+    ) return;
+
+
+    let parent =
         prompt(
+
             "Parent Name",
+
             student.parent
+
         );
 
-    if (newParent === null) return;
 
-    let newPhone =
+    if (
+        parent === null
+    ) return;
+
+
+    let phone =
         prompt(
-            "Phone Number",
+
+            "Phone",
+
             student.phone
+
         );
 
-    if (newPhone === null) return;
 
-    students[index].name =
-        newName.trim();
+    if (
+        phone === null
+    ) return;
 
-    students[index].parent =
-        newParent.trim();
 
-    students[index].phone =
-        newPhone.trim();
+    let joiningDate =
+        prompt(
+
+            "Joining Date",
+
+            student.joiningDate
+
+        );
+
+
+    if (
+        joiningDate === null
+    ) return;
+
+
+    let fee =
+        prompt(
+
+            "Monthly Fee",
+
+            student.fee
+
+        );
+
+
+    if (
+        fee === null
+    ) return;
+
+
+    fee =
+        Number(fee);
+
+
+    if (
+        isNaN(fee) ||
+        fee < 0
+    ) {
+
+        alert(
+            "Invalid fee."
+        );
+
+        return;
+
+    }
+
+
+    student.name =
+        name.trim();
+
+
+    student.parent =
+        parent.trim();
+
+
+    student.phone =
+        phone.trim();
+
+
+    student.joiningDate =
+        joiningDate;
+
+
+    student.fee =
+        fee;
+
 
     saveStudents();
 
+
     displayStudents();
 
-    if (typeof loadAttendance === "function") {
+
+    if (
+        typeof displayFees ===
+        "function"
+    ) {
+
+        displayFees();
+
+    }
+
+}
+
+
+function deleteStudent(index) {
+
+    if (
+
+        !confirm(
+            "Delete this student?"
+        )
+
+    ) return;
+
+
+    students.splice(
+
+        index,
+
+        1
+
+    );
+
+
+    saveStudents();
+
+
+    displayStudents();
+
+
+    if (
+        typeof loadAttendance ===
+        "function"
+    ) {
 
         loadAttendance();
 
@@ -327,86 +697,60 @@ function editStudent(index) {
 }
 
 
-
-
-
-// Delete Student
-
-function deleteStudent(index) {
-
-
-    let confirmDelete =
-        confirm(
-            "Delete this student?"
-        );
-
-
-
-    if (confirmDelete) {
-
-
-        students.splice(index, 1);
-
-
-
-        saveStudents();
-
-
-        displayStudents();
-
-
-
-        if (typeof loadAttendance === "function") {
-
-            loadAttendance();
-
-        }
-
-
-    }
-
-
-}
-
-
-
-
-
-
-// WhatsApp
-
 function openWhatsApp(phone) {
 
+    if (!phone) {
 
-    if (phone === "") {
-
-        alert("Phone number not available");
+        alert(
+            "Phone number unavailable."
+        );
 
         return;
 
     }
 
 
+    let number =
+
+        phone.replace(
+
+            /\D/g,
+
+            ""
+
+        );
+
+
+    if (
+        number.length === 10
+    ) {
+
+        number =
+            "91" +
+            number;
+
+    }
+
 
     window.open(
 
-        "https://wa.me/91" + phone,
+        "https://wa.me/" +
+        number,
 
         "_blank"
 
     );
 
-
 }
 
-// Update Dashboard Count
 
 function updateStudentCount() {
 
-
     let count =
-        document.getElementById("totalStudents");
-
+        document
+        .getElementById(
+            "totalStudents"
+        );
 
 
     if (count) {
@@ -416,9 +760,7 @@ function updateStudentCount() {
 
     }
 
-
 }
 
-// Load students when page opens
 
 displayStudents();
