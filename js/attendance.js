@@ -1,10 +1,22 @@
-// Load saved attendance and preserve existing records
-let attendanceData = JSON.parse(
-    localStorage.getItem("attendance")
-) || {};
+// ========================================
+// BLOOMBEE - ATTENDANCE MANAGEMENT
+// 25-class cycles, two classes per day
+// Historical attendance is preserved.
+// ========================================
 
-// Convert old attendance records into the new array format.
-// Old records such as "Present" become ["Present", ""].
+let attendanceData = {};
+
+try {
+    attendanceData = JSON.parse(
+        localStorage.getItem("attendance")
+    ) || {};
+} catch (error) {
+    attendanceData = {};
+}
+
+// Convert legacy records into the two-class format.
+// Old: "Present"
+// New: ["Present", ""]
 Object.keys(attendanceData).forEach(date => {
     const day = attendanceData[date];
 
@@ -41,13 +53,15 @@ function getSelectedDate() {
 
 function getClassesToday() {
     const selector = document.getElementById("dailyClasses");
-    return selector ? Number(selector.value) : 1;
+    const count = selector ? Number(selector.value) : 1;
+
+    return count === 2 ? 2 : 1;
 }
 
-// Count all marked class sessions for one student.
+// Return all marked class sessions for a student.
 // Each Present or Absent mark counts as one class.
-function getStudentSessions(studentId) {
-    let count = 0;
+function getStudentAttendanceHistory(studentId) {
+    const sessions = [];
 
     Object.keys(attendanceData).sort().forEach(date => {
         const day = attendanceData[date];
@@ -64,15 +78,87 @@ function getStudentSessions(studentId) {
 
         marks.forEach(status => {
             if (status === "Present" || status === "Absent") {
-                count++;
+                sessions.push({
+                    date,
+                    status
+                });
             }
         });
     });
 
-    return count;
+    return sessions;
 }
 
-// Load attendance for the selected date
+// Total marked sessions across all historical cycles.
+function getStudentSessions(studentId) {
+    return getStudentAttendanceHistory(studentId).length;
+}
+
+// Statistics for the student's latest 25-class cycle.
+function getStudentAttendanceStats(studentId) {
+    const history = getStudentAttendanceHistory(studentId);
+    const totalSessions = history.length;
+
+    if (totalSessions === 0) {
+        return {
+            total: 0,
+            present: 0,
+            absent: 0,
+            percentage: 0,
+            completedCycles: 0,
+            overallTotal: 0
+        };
+    }
+
+    // Keep the completed cycle at 25/25 until the next class is marked.
+    const cycleTotal = ((totalSessions - 1) % 25) + 1;
+    const currentCycle = history.slice(-cycleTotal);
+
+    const present = currentCycle.filter(
+        session => session.status === "Present"
+    ).length;
+
+    const absent = currentCycle.filter(
+        session => session.status === "Absent"
+    ).length;
+
+    return {
+        total: cycleTotal,
+        present,
+        absent,
+        percentage: Math.round((present / cycleTotal) * 100),
+        completedCycles: Math.floor(totalSessions / 25),
+        overallTotal: totalSessions
+    };
+}
+
+// Maintain compatibility with older code that uses this function.
+function getIndividualAttendance(student, selectedDate) {
+    const stats = getStudentAttendanceStats(student.id);
+
+    return {
+        total: stats.total,
+        present: stats.present,
+        absent: stats.absent,
+        percentage: stats.percentage
+    };
+}
+
+// Reset fee status when a student's 25-class cycle is completed.
+function resetFeeStatusIfCycleCompleted(student, before, after) {
+    if (!student || after <= before) return;
+
+    if (Math.floor(after / 25) > Math.floor(before / 25)) {
+        student.feeStatus = "Not Paid";
+
+        if (typeof saveStudents === "function") {
+            saveStudents();
+        } else {
+            localStorage.setItem("students", JSON.stringify(students));
+        }
+    }
+}
+
 function loadAttendance() {
     const list = document.getElementById("attendanceList");
     if (!list) return;
@@ -86,12 +172,10 @@ function loadAttendance() {
 
     const day = attendanceData[date];
     const classes = getClassesToday();
-
     const holidayMessage = document.getElementById("holidayMessage");
 
     if (holidayMessage) {
-        holidayMessage.innerHTML =
-            day && day.holiday ?
+        holidayMessage.innerHTML = day && day.holiday ?
             "<p>🏖 This date is marked as a holiday.</p>" :
             "";
     }
@@ -124,6 +208,7 @@ function loadAttendance() {
             marks = ["", ""];
         }
 
+        const stats = getStudentAttendanceStats(student.id);
         const card = document.createElement("div");
         card.className = "attendance-card";
 
@@ -158,15 +243,15 @@ function loadAttendance() {
             `;
         }
 
-        const totalSessions = getStudentSessions(student.id);
-        const currentCycle = totalSessions % 25 || (totalSessions > 0 ? 25 : 0);
-
         card.innerHTML = `
             <div class="attendance-student">
                 <h3>👤 ${escapeAttendanceText(student.name)}</h3>
-                <p>🎓 Class: ${escapeAttendanceText(student.class)}</p>
-                <p>📅 Date: ${date}</p>
-                <p>📊 Current 25-class cycle: ${currentCycle}/25</p>
+                <p>🎓 Class: ${escapeAttendanceText(student.class || "-")}</p>
+                <p>📅 Date: ${escapeAttendanceText(date)}</p>
+                <p>📊 Current cycle: ${stats.total}/25 classes marked</p>
+                <p>✅ Present: ${stats.present}</p>
+                <p>❌ Absent: ${stats.absent}</p>
+                <p>📈 Attendance: ${stats.percentage}%</p>
                 ${sessionHTML}
             </div>
         `;
@@ -175,7 +260,6 @@ function loadAttendance() {
     });
 }
 
-// Mark one specific class as Present or Absent
 function markAttendance(studentId, slot, status) {
     const date = getSelectedDate();
 
@@ -185,6 +269,13 @@ function markAttendance(studentId, slot, status) {
     }
 
     if (slot !== 0 && slot !== 1) return;
+
+    if (slot >= getClassesToday()) {
+        alert("Please select the number of classes scheduled for this day.");
+        return;
+    }
+
+    if (status !== "Present" && status !== "Absent") return;
 
     if (attendanceData[date] && attendanceData[date].holiday) {
         alert("This date is marked as a holiday.");
@@ -211,68 +302,57 @@ function markAttendance(studentId, slot, status) {
 
     const before = getStudentSessions(studentId);
 
-    // Update only the selected class.
-    // Class 1 and Class 2 remain separate.
+    // Change only the selected class mark.
     marks[slot] = status;
     attendanceData[date][studentId] = marks;
 
     const after = getStudentSessions(studentId);
-
-    // Reset the fee status when a new 25-class cycle is completed.
     const student = students.find(
         item => String(item.id) === String(studentId)
     );
 
-    if (
-        student &&
-        after > before &&
-        Math.floor(after / 25) > Math.floor(before / 25)
-    ) {
-        student.feeStatus = "Not Paid";
-
-        if (typeof saveStudents === "function") {
-            saveStudents();
-        } else {
-            localStorage.setItem("students", JSON.stringify(students));
-        }
-    }
+    resetFeeStatusIfCycleCompleted(student, before, after);
 
     saveAttendance();
     loadAttendance();
 
-    if (typeof updateDashboard === "function") {
-        updateDashboard();
-    }
-
-    if (typeof displayStudents === "function") {
-        displayStudents();
-    }
-
-    if (typeof updatePendingFees === "function") {
-        updatePendingFees();
-    }
+    if (typeof updateDashboard === "function") updateDashboard();
+    if (typeof displayStudents === "function") displayStudents();
+    if (typeof updatePendingFees === "function") updatePendingFees();
 }
 
-// Clear one class mark without removing the other class
 function clearAttendance(studentId, slot) {
     const date = getSelectedDate();
-    if (!date || !attendanceData[date]) return;
 
-    const marks = attendanceData[date][studentId];
+    if (!date || !attendanceData[date]) return;
+    if (slot !== 0 && slot !== 1) return;
+
+    const day = attendanceData[date];
+
+    if (day.holiday) {
+        alert("Remove the holiday before editing attendance.");
+        return;
+    }
+
+    let marks = day[studentId];
+
+    if (typeof marks === "string") {
+        marks = [marks, ""];
+    }
 
     if (!Array.isArray(marks)) return;
 
     marks[slot] = "";
+    day[studentId] = marks;
 
     saveAttendance();
     loadAttendance();
 
-    if (typeof updateDashboard === "function") {
-        updateDashboard();
-    }
+    if (typeof updateDashboard === "function") updateDashboard();
+    if (typeof displayStudents === "function") displayStudents();
 }
 
-// Mark every student Present for the selected class or classes
+// Mark all students Present for the selected class or classes.
 function markAllPresent() {
     const date = getSelectedDate();
 
@@ -286,6 +366,11 @@ function markAllPresent() {
         return;
     }
 
+    if (typeof students === "undefined" || students.length === 0) {
+        alert("Please add students first.");
+        return;
+    }
+
     if (!attendanceData[date]) {
         attendanceData[date] = {};
     }
@@ -293,6 +378,7 @@ function markAllPresent() {
     const classes = getClassesToday();
 
     students.forEach(student => {
+        const before = getStudentSessions(student.id);
         let marks = attendanceData[date][student.id];
 
         if (typeof marks === "string") {
@@ -307,8 +393,6 @@ function markAllPresent() {
             marks.push("");
         }
 
-        const before = getStudentSessions(student.id);
-
         for (let slot = 0; slot < classes; slot++) {
             marks[slot] = "Present";
         }
@@ -316,17 +400,14 @@ function markAllPresent() {
         attendanceData[date][student.id] = marks;
 
         const after = getStudentSessions(student.id);
-
-        if (
-            after > before &&
-            Math.floor(after / 25) > Math.floor(before / 25)
-        ) {
-            student.feeStatus = "Not Paid";
-        }
+        resetFeeStatusIfCycleCompleted(student, before, after);
     });
 
     saveAttendance();
-    localStorage.setItem("students", JSON.stringify(students));
+
+    if (typeof saveStudents === "function") {
+        saveStudents();
+    }
 
     loadAttendance();
 
@@ -337,7 +418,7 @@ function markAllPresent() {
     alert(`All students marked Present for ${classes} class(es).`);
 }
 
-// Mark or remove a holiday without deleting saved attendance records
+// Toggle a holiday without deleting historical records.
 function toggleHoliday() {
     const date = getSelectedDate();
 
@@ -360,6 +441,8 @@ function toggleHoliday() {
 
             saveAttendance();
             loadAttendance();
+
+            if (typeof updateDashboard === "function") updateDashboard();
         }
 
         return;
@@ -370,67 +453,8 @@ function toggleHoliday() {
         saveAttendance();
         loadAttendance();
 
-        if (typeof updateDashboard === "function") {
-            updateDashboard();
-        }
+        if (typeof updateDashboard === "function") updateDashboard();
     }
-}
-
-// Keep this helper for existing report code that may use monthly/yearly counts
-function getIndividualAttendance(student, selectedDate) {
-    const selected = new Date(selectedDate + "T00:00:00");
-
-    let monthlyPresent = 0;
-    let monthlyAbsent = 0;
-    let yearPresent = 0;
-    let yearAbsent = 0;
-    let holidays = 0;
-
-    Object.keys(attendanceData).forEach(date => {
-        const day = attendanceData[date];
-        const current = new Date(date + "T00:00:00");
-
-        const sameMonth =
-            current.getMonth() === selected.getMonth() &&
-            current.getFullYear() === selected.getFullYear();
-
-        const sameYear = current.getFullYear() === selected.getFullYear();
-
-        if (day && day.holiday) {
-            if (sameMonth) holidays++;
-            return;
-        }
-
-        let marks = day && day[student.id];
-
-        if (typeof marks === "string") {
-            marks = [marks, ""];
-        }
-
-        if (!Array.isArray(marks)) return;
-
-        marks.forEach(status => {
-            if (status === "Present") {
-                if (sameMonth) monthlyPresent++;
-                if (sameYear) yearPresent++;
-            } else if (status === "Absent") {
-                if (sameMonth) monthlyAbsent++;
-                if (sameYear) yearAbsent++;
-            }
-        });
-    });
-
-    return {
-        monthName: selected.toLocaleString("en-IN", {
-            month: "long",
-            year: "numeric"
-        }),
-        monthlyPresent,
-        monthlyAbsent,
-        holidays,
-        yearPresent,
-        yearAbsent
-    };
 }
 
 function escapeAttendanceText(value) {
@@ -443,12 +467,13 @@ function escapeAttendanceText(value) {
     })[character]);
 }
 
-// Initialize the date and attendance page
+// Initialize date and attendance controls.
 document.addEventListener("DOMContentLoaded", function() {
     const dateInput = document.getElementById("attendanceDate");
 
     if (dateInput && !dateInput.value) {
         const now = new Date();
+
         dateInput.value =
             now.getFullYear() + "-" +
             String(now.getMonth() + 1).padStart(2, "0") + "-" +
@@ -457,6 +482,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
     if (dateInput) {
         dateInput.addEventListener("change", loadAttendance);
+    }
+
+    const classSelector = document.getElementById("dailyClasses");
+
+    if (classSelector) {
+        classSelector.addEventListener("change", loadAttendance);
     }
 
     loadAttendance();
