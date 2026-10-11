@@ -291,6 +291,11 @@
 
 
                     <input id="attendanceDate" type="date">
+                    <label for="dailyClasses">Classes Today</label>
+                    <select id="dailyClasses" onchange="loadAttendance()">
+                        <option value="1">1 Class</option>
+                        <option value="2">2 Classes</option>
+                    </select>
 
 
 
@@ -313,98 +318,7 @@
 
 
 
-                <div class="attendance-summary">
 
-
-                    <h3>
-                        📊 Attendance Summary
-                    </h3>
-
-
-                    <p>
-
-                        Selected Month:
-
-                        <strong id="selectedMonth">
-
-                        -
-
-                    </strong>
-
-                    </p>
-
-
-
-                    <p>
-
-                        ✅ Monthly Present:
-
-                        <strong id="monthlyPresent">
-
-                        0
-
-                    </strong>
-
-                    </p>
-
-
-
-                    <p>
-
-                        ❌ Monthly Absent:
-
-                        <strong id="monthlyAbsent">
-
-                        0
-
-                    </strong>
-
-                    </p>
-
-
-
-                    <p>
-
-                        🏖 Holidays:
-
-                        <strong id="monthlyHolidays">
-
-                        0
-
-                    </strong>
-
-                    </p>
-
-
-
-                    <p>
-
-                        📈 Year Present:
-
-                        <strong id="yearPresent">
-
-                        0
-
-                    </strong>
-
-                    </p>
-
-
-
-                    <p>
-
-                        📉 Year Absent:
-
-                        <strong id="yearAbsent">
-
-                        0
-
-                    </strong>
-
-                    </p>
-
-
-                </div>
 
 
 
@@ -420,6 +334,7 @@
 
 
             </section>
+
 
 
 

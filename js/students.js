@@ -1,766 +1,157 @@
-let students =
-    JSON.parse(
-        localStorage.getItem("students")
-    ) || [];
+// Load students from localStorage
+let students = JSON.parse(localStorage.getItem("students")) || [];
 
-
-students.forEach(
-    (student, index) => {
-
-        if (!student.id) {
-
-            student.id =
-                Date.now() +
-                index;
-
-        }
-
-
-        if (!student.joiningDate) {
-
-            student.joiningDate =
-                "";
-
-        }
-
-
-        if (
-            student.fee === undefined
-        ) {
-
-            student.fee = 0;
-
-        }
-
-
-        if (!student.feeStatus) {
-
-            student.feeStatus =
-                "Not Paid";
-
-        }
-
-
-        if (!student.attendance) {
-
-            student.attendance = {
-
-                present: 0,
-
-                absent: 0
-
-            };
-
-        }
-
-    }
-);
-
-
-saveStudents();
-
-
+// Save students
 function saveStudents() {
-
-    localStorage.setItem(
-
-        "students",
-
-        JSON.stringify(
-            students
-        )
-
-    );
-
+    localStorage.setItem("students", JSON.stringify(students));
 }
 
-
+// Add a new student
 function addStudent() {
+    const name = document.getElementById("studentName").value.trim();
+    const studentClass = document.getElementById("studentClass").value;
+    const parent = document.getElementById("parentName").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const joiningDate = document.getElementById("joiningDate").value;
+    const fee = Number(document.getElementById("fee").value);
 
-    let name =
-        document
-        .getElementById(
-            "studentName"
-        )
-        .value
-        .trim();
-
-
-    let className =
-        document
-        .getElementById(
-            "studentClass"
-        )
-        .value;
-
-
-    let parent =
-        document
-        .getElementById(
-            "parentName"
-        )
-        .value
-        .trim();
-
-
-    let phone =
-        document
-        .getElementById(
-            "phone"
-        )
-        .value
-        .trim();
-
-
-    let joiningDate =
-        document
-        .getElementById(
-            "joiningDate"
-        )
-        .value;
-
-
-    let fee =
-        Number(
-
-            document
-            .getElementById(
-                "fee"
-            )
-            .value
-
-        );
-
-
-    if (name === "") {
-
-        alert(
-            "Enter student name."
-        );
-
+    if (!name || !parent || !phone || !joiningDate || document.getElementById("fee").value === "") {
+        alert("Please fill in all student details.");
         return;
-
     }
 
-
-    if (joiningDate === "") {
-
-        alert(
-            "Select joining date."
-        );
-
+    if (fee < 0 || !Number.isFinite(fee)) {
+        alert("Please enter a valid fee amount.");
         return;
-
     }
 
+    const student = {
+        id: Date.now().toString(),
+        name,
+        class: studentClass,
+        parent,
+        phone,
+        joiningDate,
+        fee,
+        feeStatus: "Not Paid",
+        attendance: {}
+    };
 
-    if (
-        isNaN(fee) ||
-        fee < 0
-    ) {
-
-        alert(
-            "Enter valid monthly fee."
-        );
-
-        return;
-
-    }
-
-
-    students.push({
-
-        id:
-
-            Date.now() +
-
-            Math.floor(
-                Math.random() * 1000
-            ),
-
-        name:
-
-            name,
-
-        class:
-
-            className,
-
-        parent:
-
-            parent,
-
-        phone:
-
-            phone,
-
-        joiningDate:
-
-            joiningDate,
-
-        fee:
-
-            fee,
-
-        feeStatus:
-
-            "Not Paid",
-
-        attendance: {
-
-            present: 0,
-
-            absent: 0
-
-        }
-
-    });
-
-
+    students.push(student);
     saveStudents();
 
-
-    document
-        .getElementById(
-            "studentName"
-        )
-        .value = "";
-
-
-    document
-        .getElementById(
-            "parentName"
-        )
-        .value = "";
-
-
-    document
-        .getElementById(
-            "phone"
-        )
-        .value = "";
-
-
-    document
-        .getElementById(
-            "joiningDate"
-        )
-        .value = "";
-
-
-    document
-        .getElementById(
-            "fee"
-        )
-        .value = "";
-
+    document.getElementById("studentName").value = "";
+    document.getElementById("parentName").value = "";
+    document.getElementById("phone").value = "";
+    document.getElementById("joiningDate").value = "";
+    document.getElementById("fee").value = "";
 
     displayStudents();
 
-
-    if (
-        typeof loadAttendance ===
-        "function"
-    ) {
-
-        loadAttendance();
-
+    if (typeof updateDashboard === "function") {
+        updateDashboard();
     }
 
-
-    if (
-        typeof displayFees ===
-        "function"
-    ) {
-
-        displayFees();
-
+    if (typeof updatePendingFees === "function") {
+        updatePendingFees();
     }
 
-
-    alert(
-        "Student added successfully."
-    );
-
+    alert("Student added successfully!");
 }
 
+// Get attendance count for the current 25-class cycle
+function getStudentAttendance(student) {
+    if (typeof getStudentSessions === "function") {
+        const totalSessions = getStudentSessions(student.id);
+        const completed = totalSessions % 25;
 
-function getStudentAttendance(
-    student
-) {
+        return {
+            total: completed === 0 && totalSessions > 0 ? 25 : completed,
+            present: 0,
+            absent: 0
+        };
+    }
 
-    let data =
-
-        JSON.parse(
-
-            localStorage.getItem(
-                "attendance"
-            )
-
-        ) || {};
-
-
-    let present = 0;
-
-    let absent = 0;
-
-
-    Object.values(
-        data
-    ).forEach(day => {
-
-        if (
-            day.holiday
-        ) {
-
-            return;
-
-        }
-
-
-        if (
-            day[student.id] ===
-            "Present"
-        ) {
-
-            present++;
-
-        }
-
-
-        if (
-            day[student.id] ===
-            "Absent"
-        ) {
-
-            absent++;
-
-        }
-
-    });
-
-
+    // Fallback until attendance.js has loaded
     return {
-
-        present:
-
-            present,
-
-        absent:
-
-            absent
-
+        total: 0,
+        present: 0,
+        absent: 0
     };
-
 }
 
-
+// Display student list
 function displayStudents() {
-
-    let list =
-        document
-        .getElementById(
-            "studentList"
-        );
-
-
+    const list = document.getElementById("studentList");
     if (!list) return;
 
-
-    let search =
-        document
-        .getElementById(
-            "search"
-        )
-        ?.value
-        ?.toLowerCase() || "";
-
+    const searchInput = document.getElementById("search");
+    const search = searchInput ? searchInput.value.toLowerCase().trim() : "";
 
     list.innerHTML = "";
 
-
-    students
-
-        .filter(student =>
-
-        student.name
-        .toLowerCase()
-        .includes(search)
-
-    )
-
-    .forEach(
-        (student, index) => {
-
-
-            let totals =
-                getStudentAttendance(
-                    student
-                );
-
-
-            let total =
-
-                totals.present +
-
-                totals.absent;
-
-
-            let percentage =
-
-                total > 0
-
-                ?
-
-                Math.round(
-
-                    totals.present /
-
-                    total *
-
-                    100
-
-                )
-
-            :
-
-            0;
-
-
-            list.innerHTML += `
-
-<div class="student-card">
-
-<h3>
-👤 ${student.name}
-</h3>
-
-<p>
-🎓 Class:
-${student.class}
-</p>
-
-<p>
-👨‍👩‍👧 Parent:
-${student.parent || "Not Added"}
-</p>
-
-<p>
-📱
-${student.phone || "No Number"}
-</p>
-
-<p>
-📅 Joining Date:
-${student.joiningDate || "Not Added"}
-</p>
-
-<p>
-💰 Monthly Fee:
-₹${student.fee}
-</p>
-
-<p>
-📄 Status:
-${student.feeStatus}
-</p>
-
-<p>
-✅ Total Present:
-${totals.present}
-</p>
-
-<p>
-❌ Total Absent:
-${totals.absent}
-</p>
-
-<p>
-📊 Attendance:
-${percentage}%
-</p>
-
-<button
-class="whatsapp"
-onclick="openWhatsApp(
-'${student.phone}'
-)">
-
-💬 WhatsApp
-
-</button>
-
-<button
-class="edit"
-onclick="editStudent(
-${index}
-)">
-
-✏ Edit
-
-</button>
-
-<button
-class="delete"
-onclick="deleteStudent(
-${index}
-)">
-
-🗑 Delete
-
-</button>
-
-</div>
-
-`;
-
-        });
-
-
-    updateStudentCount();
-
-}
-
-
-function editStudent(index) {
-
-    let student =
-        students[index];
-
-
-    let name =
-        prompt(
-
-            "Student Name",
-
-            student.name
-
-        );
-
-
-    if (
-        name === null
-    ) return;
-
-
-    let parent =
-        prompt(
-
-            "Parent Name",
-
-            student.parent
-
-        );
-
-
-    if (
-        parent === null
-    ) return;
-
-
-    let phone =
-        prompt(
-
-            "Phone",
-
-            student.phone
-
-        );
-
-
-    if (
-        phone === null
-    ) return;
-
-
-    let joiningDate =
-        prompt(
-
-            "Joining Date",
-
-            student.joiningDate
-
-        );
-
-
-    if (
-        joiningDate === null
-    ) return;
-
-
-    let fee =
-        prompt(
-
-            "Monthly Fee",
-
-            student.fee
-
-        );
-
-
-    if (
-        fee === null
-    ) return;
-
-
-    fee =
-        Number(fee);
-
-
-    if (
-        isNaN(fee) ||
-        fee < 0
-    ) {
-
-        alert(
-            "Invalid fee."
-        );
-
+    const filteredStudents = students.filter(student =>
+        student.name.toLowerCase().includes(search) ||
+        student.class.toLowerCase().includes(search) ||
+        student.parent.toLowerCase().includes(search)
+    );
+
+    if (filteredStudents.length === 0) {
+        list.innerHTML = "<p>No students found.</p>";
         return;
-
     }
 
+    filteredStudents.forEach(student => {
+        const attendance = getStudentAttendance(student);
 
-    student.name =
-        name.trim();
+        const card = document.createElement("div");
+        card.className = "student-card";
 
+        card.innerHTML = `
+            <h3>${escapeStudentText(student.name)}</h3>
+            <p><strong>Class:</strong> ${escapeStudentText(student.class)}</p>
+            <p><strong>Parent:</strong> ${escapeStudentText(student.parent)}</p>
+            <p><strong>Phone:</strong> ${escapeStudentText(student.phone)}</p>
+            <p><strong>Joining Date:</strong> ${escapeStudentText(student.joiningDate || "-")}</p>
+            <p><strong>Fee for 25 Classes:</strong> ₹${Number(student.fee || 0)}</p>
+            <p><strong>Current Cycle:</strong> ${attendance.total}/25 classes marked</p>
+            <button onclick="deleteStudent('${student.id}')">🗑 Delete</button>
+        `;
 
-    student.parent =
-        parent.trim();
+        list.appendChild(card);
+    });
+}
 
+// Safely display student-entered text
+function escapeStudentText(value) {
+    return String(value ?? "").replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[character]);
+}
 
-    student.phone =
-        phone.trim();
+// Delete a student
+function deleteStudent(id) {
+    if (!confirm("Are you sure you want to delete this student?")) {
+        return;
+    }
 
-
-    student.joiningDate =
-        joiningDate;
-
-
-    student.fee =
-        fee;
-
-
+    students = students.filter(student => student.id !== id);
     saveStudents();
-
 
     displayStudents();
 
+    if (typeof updateDashboard === "function") {
+        updateDashboard();
+    }
 
-    if (
-        typeof displayFees ===
-        "function"
-    ) {
-
+    if (typeof displayFees === "function") {
         displayFees();
-
     }
-
 }
 
-
-function deleteStudent(index) {
-
-    if (
-
-        !confirm(
-            "Delete this student?"
-        )
-
-    ) return;
-
-
-    students.splice(
-
-        index,
-
-        1
-
-    );
-
-
-    saveStudents();
-
-
-    displayStudents();
-
-
-    if (
-        typeof loadAttendance ===
-        "function"
-    ) {
-
-        loadAttendance();
-
-    }
-
-}
-
-
-function openWhatsApp(phone) {
-
-    if (!phone) {
-
-        alert(
-            "Phone number unavailable."
-        );
-
-        return;
-
-    }
-
-
-    let number =
-
-        phone.replace(
-
-            /\D/g,
-
-            ""
-
-        );
-
-
-    if (
-        number.length === 10
-    ) {
-
-        number =
-            "91" +
-            number;
-
-    }
-
-
-    window.open(
-
-        "https://wa.me/" +
-        number,
-
-        "_blank"
-
-    );
-
-}
-
-
-function updateStudentCount() {
-
-    let count =
-        document
-        .getElementById(
-            "totalStudents"
-        );
-
-
-    if (count) {
-
-        count.innerText =
-            students.length;
-
-    }
-
-}
-
-
+// Initial display
 displayStudents();
