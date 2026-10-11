@@ -13,23 +13,25 @@ function displayFees() {
     students
         .filter(student => filter === "All" || student.class === filter)
         .forEach(student => {
+            // getStudentSessions returns a NUMBER, not an array.
             const sessions = typeof getStudentSessions === "function" ?
                 getStudentSessions(student.id) :
-                [];
+                0;
 
-            const cycleClasses = sessions.length % 25 ||
-                (sessions.length > 0 ? 25 : 0);
+            // Show 0/25 after each completed cycle.
+            const cycleClasses = sessions % 25;
 
             feeList.innerHTML += `
                 <div class="student-card">
-                    <h3>👤 ${student.name}</h3>
-                    <p>🎓 Class: ${student.class}</p>
-                    <p>💰 Fee per 25 classes: ₹${student.fee}</p>
-                    <p>📚 Classes completed: ${cycleClasses}/25</p>
+                    <h3>👤 ${escapeFeeText(student.name)}</h3>
+                    <p>🎓 Class: ${escapeFeeText(student.class || "")}</p>
+                    <p>💰 Fee per 25 classes: ₹${Number(student.fee || 0)}</p>
+                    <p>📚 Current cycle: ${cycleClasses}/25</p>
                     <p>📄 Payment Status:
-                        <strong>${student.feeStatus || "Not Paid"}</strong>
+                        <strong>${escapeFeeText(student.feeStatus || "Not Paid")}</strong>
                     </p>
-                    <button onclick="markFeePaid(${student.id})">
+                    <button type="button"
+                        onclick="markFeePaid('${String(student.id).replace(/'/g, "\\'")}')">
                         ${student.feeStatus === "Paid"
                             ? "↩ Mark Unpaid"
                             : "✅ Mark Paid"}
@@ -41,8 +43,21 @@ function displayFees() {
     updatePendingFees();
 }
 
+function escapeFeeText(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[char]);
+}
+
 function markFeePaid(studentId) {
-    const student = students.find(s => s.id === studentId);
+    const student = students.find(
+        s => String(s.id) === String(studentId)
+    );
+
     if (!student) return;
 
     student.feeStatus =
@@ -51,6 +66,7 @@ function markFeePaid(studentId) {
     saveStudents();
     displayFees();
 
+    if (typeof displayStudents === "function") displayStudents();
     if (typeof updateDashboard === "function") updateDashboard();
 }
 
